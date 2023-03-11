@@ -7,31 +7,41 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { auth } from "../firebase";
+import { setDoc, doc } from "firebase/firestore";
+import { auth, firestore } from "../firebase";
 
-function LoginScreen() {
+function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const navigation = useNavigation();
 
-  const LoginHandler = () => {
+  const RegisterHandler = () => {
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     auth
-      .signInWithEmailAndPassword(email, password)
-      .then((userCredential) => {
+      .createUserWithEmailAndPassword(email, password)
+      .then(async (userCredential) => {
         const user = userCredential.user;
-        setEmail(user.email);
-        navigation.replace("Home", { email: user.email });
-      })
-      .catch((error) => {
-        alert(error.message + ": " + error.code);
+        try {
+          await setDoc(doc(firestore, "users", email), {
+            email: email,
+          });
+          navigation.replace("Home", { email: user.email });
+        } catch (e) {
+          console.error("Error adding document: ", e);
+        }
       });
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Login</Text>
+        <Text style={styles.headerText}>Register</Text>
       </View>
       <TextInput
         style={styles.textInput}
@@ -44,33 +54,21 @@ function LoginScreen() {
         secureTextEntry={true}
         onChangeText={(password) => setPassword(password)}
       />
+      <TextInput
+        style={styles.textInput}
+        placeholder="Confirm Password"
+        secureTextEntry={true}
+        onChangeText={(confirmPassword) => setConfirmPassword(confirmPassword)}
+      />
 
-      <TouchableOpacity style={styles.loginButton} onPress={LoginHandler}>
-        <Text style={{ color: "#fff", fontSize: 18 }}>Login</Text>
+      <TouchableOpacity style={styles.registerButton} onPress={RegisterHandler}>
+        <Text style={{ color: "#fff", fontSize: 18 }}>Register</Text>
       </TouchableOpacity>
-      <View style={styles.registerContainer}>
-        <Text
-          style={{
-            color: "#fff",
-            fontSize: 20,
-            paddingTop: 0,
-            textAlign: "center",
-          }}
-        >
-          If you don't have an account you can register here:
-        </Text>
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={() => navigation.navigate("Register")}
-        >
-          <Text style={{ color: "#fff", fontSize: 18 }}>Register</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
 
-export default LoginScreen;
+export default RegisterScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -92,25 +90,11 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: "10%",
-    marginTop: 250,
     alignItems: "center",
   },
   headerText: {
     fontSize: 28,
     color: "white",
-  },
-  loginButton: {
-    marginTop: "5%",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-    backgroundColor: "#379799",
-    padding: 10,
-    width: "18%",
-  },
-  registerContainer: {
-    marginTop: 150,
-    alignItems: "center",
   },
   registerButton: {
     marginTop: "5%",

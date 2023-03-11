@@ -5,6 +5,10 @@ import { useNavigation } from "@react-navigation/native";
 import { auth } from "./firebase";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
+import ProductInformation from "./screens/ProductInformation";
+import RegisterScreen from "./screens/RegisterPage";
+import RegisterCollar from "./screens/RegisterCollarScreen";
+import React, { useEffect, useState } from "react";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -25,6 +29,7 @@ export default function App() {
               backgroundColor: "#369399",
             },
             headerShadowVisible: true,
+            headerLeft: () => "",
             headerTitleStyle: {
               fontSize: 21,
               fontWeight: "400",
@@ -33,6 +38,21 @@ export default function App() {
             headerRight: () => <HomeScreenSignOutButton />,
           }}
           component={HomeScreen}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="Product"
+          component={ProductInformation}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="Register"
+          component={RegisterScreen}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="RegisterCollar"
+          component={RegisterCollar}
         />
       </Stack.Navigator>
     </NavigationContainer>

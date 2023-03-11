@@ -1,6 +1,6 @@
 import firebase from "firebase/compat/app";
-import "firebase/compat/auth"; // add this import
-import { getFirestore } from "firebase/firestore";
+import "firebase/compat/firestore";
+import "firebase/compat/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCgZ1rql5dUiBfFXqzjKVri0wR0OdtzRig",
@@ -12,11 +12,9 @@ const firebaseConfig = {
   appId: "1:324796647216:web:6ef197e6f66fc28e92eaf5",
   measurementId: "G-XMD77QFBFV",
 };
-let app = {};
-!firebase.apps.length
-  ? (app = firebase.initializeApp(firebaseConfig))
-  : (app = firebase.app());
-const auth = firebase.auth(app);
-const firestore = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const firestore = firebase.firestore();
+const users = firestore.collection("users");
 
-export { auth, firestore };
+export { auth, firestore, users };
