@@ -1,17 +1,27 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, LogBox } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
 import { auth } from "./firebase";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProductInformation from "./screens/ProductInformation";
 import RegisterScreen from "./screens/RegisterPage";
 import RegisterCollar from "./screens/RegisterCollarScreen";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import useLocation from "./getLocation";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const Stack = createNativeStackNavigator();
+  const [location, setLocation] = useState(null);
+  LogBox.ignoreAllLogs();
+
+  useEffect(() => {
+    async function fetchLocation() {
+      const locationData = await useLocation();
+      setLocation(locationData);
+    }
+  }, []);
 
   return (
     <NavigationContainer>
@@ -23,7 +33,7 @@ export default function App() {
         />
         <Stack.Screen
           name="Home"
-          options={{
+          options={({ navigation }) => ({
             headerTitle: "Home",
             headerStyle: {
               backgroundColor: "#369399",
@@ -35,15 +45,19 @@ export default function App() {
               fontWeight: "400",
               color: "lightgrey",
             },
-            headerRight: () => <HomeScreenSignOutButton />,
-          }}
+            headerRight: () => (
+              <HomeScreenSignOutButton navigation={navigation} />
+            ),
+          })}
           component={HomeScreen}
         />
         <Stack.Screen
           options={{ headerShown: false }}
           name="Product"
           component={ProductInformation}
+          initialParams={{ location }}
         />
+
         <Stack.Screen
           options={{ headerShown: false }}
           name="Register"
@@ -59,9 +73,7 @@ export default function App() {
   );
 }
 
-function HomeScreenSignOutButton() {
-  const navigation = useNavigation();
-
+function HomeScreenSignOutButton({ navigation }) {
   const signoutHandler = () => {
     auth
       .signOut()
@@ -77,12 +89,3 @@ function HomeScreenSignOutButton() {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

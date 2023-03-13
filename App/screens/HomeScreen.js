@@ -17,24 +17,30 @@ import { Client, Message } from "paho-mqtt";
 export default function HomeScreen(props) {
   const { email } = props.route.params;
   const [collars, setCollars] = useState([]);
-  const [lockDoorColor, setLockDoorColor] = useState("green");
-  const [image, setImage] = useState(require("../src/img/unlock.png"));
+  const [lockDoorColor, setLockDoorColor] = useState("red");
+  const [image, setImage] = useState(require("../src/img/lock.png"));
   const navigation = useNavigation();
 
+  const location = props.route.params.location;
+  console.log(location, "HomeScreen");
+
   async function getData() {
-    const dbInstance = collection(firestore, "users", email, "collars");
-    const userDocs = await getDocs(dbInstance);
-    const collars = userDocs.docs.map((doc) => ({
-      id: doc.data().id,
-      name: doc.data().name,
-    }));
-    return collars;
+    try {
+      const dbInstance = collection(firestore, "users", email, "collars");
+      const userDocs = await getDocs(dbInstance);
+      const mappedCollars = userDocs.docs.map((doc) => ({
+        id: doc.data().id,
+        name: doc.data().name,
+      }));
+      return mappedCollars;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function PressHandler(collar) {
-    navigation.navigate("Product", { collar, email });
+    navigation.navigate("Product", { collar, email, location });
   }
-
   function CheckStatus(status) {
     if (status === "Online") {
       return (
@@ -112,8 +118,8 @@ export default function HomeScreen(props) {
 
   return (
     <View style={{ backgroundColor: "white", flex: 1 }}>
-      <ScrollView>
-        <View style={styles.container}>
+      <View style={styles.container}>
+        <ScrollView>
           {collars.map((collar, key) => (
             <Animated.View
               key={key}
@@ -125,12 +131,13 @@ export default function HomeScreen(props) {
                 </View>
                 <View style={styles.statusContainer}>
                   <Text style={styles.idText}>ID: {collar.id}</Text>
+                  {CheckStatus(collar.status)}
                 </View>
               </Pressable>
             </Animated.View>
           ))}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
       <Animated.View
         style={{
           opacity: fadeAnim,
@@ -201,6 +208,7 @@ const styles = StyleSheet.create({
     width: 55,
     borderRadius: 100,
     borderWidth: 1,
+    marginTop: 20,
     backgroundColor: "#045c62",
   },
   lockDoor: {

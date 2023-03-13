@@ -39,14 +39,15 @@ export default function ProductPage(props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const collar = props.route.params.collar;
   const email = props.route.params.email;
+  const location = props.route.params.location;
+  console.log(location, "ProductMap");
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const [view, setView] = useState(true);
-  const [region, setRegion] = useState({
-    latitude: 42.6977,
-    longitude: 23.3219,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+  const [userRegion, setUserRegion] = useState(location);
+  const [collarRegion, setCollarRegion] = useState({
+    latitude: 0,
+    longitude: 0,
   });
 
   useEffect(() => {
@@ -65,26 +66,32 @@ export default function ProductPage(props) {
         console.log("fail");
       },
     });
-
+    setUserRegion(location);
+    console.log("location ", location);
     client.onMessageArrived = (message) => {
       const a = message.payloadString.split(", ");
       const newLat = parseFloat(a[0]);
       const newLon = parseFloat(a[1]);
       if (newLat && newLon != 0.0) {
         setView(false);
-        updateUserPosition(newLat, newLon);
+        updateCollarPosition(newLat, newLon);
+        //setUserRegion(newLat, newLon);
       }
     };
-  }, []);
+    console.log("Map Center Region", userRegion);
+  }, [location]);
 
-  const updateUserPosition = (newLat, newLon) => {
+  const updateCollarPosition = (newLat, newLon) => {
     const newRegion = {
       latitude: newLat,
       longitude: newLon,
-      latitudeDelta: 0.1,
-      longitudeDelta: 0.1,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
     };
-    setRegion(newRegion);
+    setCollarRegion(newRegion);
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(newRegion, 1000);
+    }
   };
 
   const hide = () => {
@@ -115,28 +122,27 @@ export default function ProductPage(props) {
         </View>
       </View>
       <View style={styles.desContainer}>
-        {region.latitude && region.longitude && (
+        {userRegion.latitude && userRegion.longitude && (
           <MapView
-            showsUserLocation={false}
+            showsUserLocation={true}
             showsIndoorLevelPicker={false}
             showsBuildings={false}
             ref={mapRef}
+            region={userRegion}
             provider={PROVIDER_GOOGLE}
-            initialRegion={region}
-            region={region}
             loadingEnabled={true}
             loadingIndicatorColor="#e21d1d"
+            onMapError={(error) => console.log("Map error:", error)}
             style={{
               flex: 1,
               width: "100%",
             }}
           >
-            <Marker
-              coordinate={{
-                latitude: region.latitude,
-                longitude: region.longitude,
-              }}
-            />
+            <Marker coordinate={collarRegion} title={collar.name}>
+              <View style={styles.circle}>
+                <View style={styles.core} />
+              </View>
+            </Marker>
           </MapView>
         )}
         <CustomText show={view} />
@@ -158,10 +164,10 @@ export default function ProductPage(props) {
           <Text style={styles.bottomSheetText}>Name: {collar.name}</Text>
           <Text style={styles.bottomSheetText}>ID: {collar.id}</Text>
           <Text style={styles.bottomSheetText}>
-            Latitude: {region.latitude}
+            Latitude: {collarRegion.latitude}
           </Text>
           <Text style={styles.bottomSheetText}>
-            Longitude: {region.longitude}
+            Longitude: {collarRegion.longitude}
           </Text>
           <Pressable onPress={hide} style={styles.bottomSheetCloseButton}>
             <Text style={styles.buttonText}>X Close</Text>
@@ -171,6 +177,7 @@ export default function ProductPage(props) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   productContainer: {
     flex: 1,
@@ -216,6 +223,22 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
   },
+  circle: {
+    height: 20,
+    width: 20,
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  core: {
+    height: 19,
+    width: 19,
+    borderRadius: 20,
+    position: "relative",
+    backgroundColor: "#369399",
+  },
+
   buttonText: {
     fontSize: 18,
   },

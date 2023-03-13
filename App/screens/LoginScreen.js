@@ -8,6 +8,8 @@ import {
   View,
 } from "react-native";
 import { auth } from "../firebase";
+import { location } from "../getLocation";
+console.log(location, "Login");
 
 function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -21,7 +23,10 @@ function LoginScreen() {
       .then((userCredential) => {
         const user = userCredential.user;
         setEmail(user.email);
-        navigation.replace("Home", { email: user.email });
+        navigation.replace("Home", {
+          email: user.email,
+          location: location,
+        });
       })
       .catch((error) => {
         alert(error.message + ": " + error.code);
