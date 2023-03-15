@@ -1,0 +1,9 @@
+node_modules
+*.log
+.nvm
+package-lock.json
+
+.vscode
+.vs
+
+.expo

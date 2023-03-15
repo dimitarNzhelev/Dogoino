@@ -9,7 +9,7 @@ import RegisterScreen from "./screens/RegisterPage";
 import RegisterCollar from "./screens/RegisterCollarScreen";
 import React, { useState, useEffect } from "react";
 import useLocation from "./getLocation";
-
+import Route from "./screens/Route";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -67,6 +67,11 @@ export default function App() {
           options={{ headerShown: false }}
           name="RegisterCollar"
           component={RegisterCollar}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="Route"
+          component={Route}
         />
       </Stack.Navigator>
     </NavigationContainer>

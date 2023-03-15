@@ -9,79 +9,27 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { Message, Client } from "paho-mqtt";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import BottomSheet from "./BottomSheet.js";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebase";
-import Dog from "../Dog";
-
-function CustomText(props) {
-  if (props.show) {
-    return (
-      <View
-        style={{
-          backgroundColor: "#369399",
-          alignSelf: "center",
-          position: "absolute",
-          marginTop: 50,
-          padding: 10,
-          borderRadius: 20,
-        }}
-      >
-        <Text style={{ fontSize: 26, color: "white" }}>
-          Uploading GPS location...
-        </Text>
-      </View>
-    );
-  } else {
-    return null;
-  }
-}
 
 export default function ProductPage(props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const collar = props.route.params.collar;
   const email = props.route.params.email;
   const location = props.route.params.location;
+  const polylineCoords = props.route.params.polylineCoords;
+  const regionCenter = polylineCoords.length / 2;
   const navigation = useNavigation();
   const mapRef = useRef(null);
-  const [view, setView] = useState(true);
-  const [userRegion, setUserRegion] = useState(location);
-  const [collarRegion, setCollarRegion] = useState({
-    latitude: 0,
-    longitude: 0,
-  });
   const [logs, setLogs] = useState([]);
-  const [polylineCoords, setPolyline] = useState();
-
-  function CustomMarker({ collar }) {
-    if (collar.type === "cat") {
-      return (
-        <Marker
-          coordinate={collarRegion}
-          title={collar.name}
-          width={60}
-          height={60}
-          icon={require("../src/img/cat.png")}
-        />
-      );
-    } else if (collar.type === "dog") {
-      return (
-        <Marker coordinate={collarRegion} title={collar.name}>
-          <View>
-            <Dog />
-          </View>
-        </Marker>
-      );
-    } else {
-      return (
-        <Marker coordinate={collarRegion} title={collar.name}>
-          <View style={styles.core} />
-        </Marker>
-      );
-    }
-  }
+  const region = {
+    latitude: polylineCoords[regionCenter].latitude,
+    longitude: polylineCoords[regionCenter].longitude,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.005,
+  };
 
   async function getLogs() {
     try {
@@ -107,62 +55,7 @@ export default function ProductPage(props) {
       setLogs(logs);
     }
     fetchLogs();
-
-    const client = new Client(
-      "broker.hivemq.com",
-      Number(8000),
-      "reactApplication"
-    );
-
-    client.connect({
-      onSuccess: function () {
-        client.subscribe(`${collar.id}/gps`);
-        client.subscribe(`${collar.id}/receiveLoc`);
-        var message = new Message("1");
-        message.destinationName = `${collar.id}/awaitLoc`;
-        client.send(message);
-      },
-      onFailure: function () {
-        console.log("fail");
-      },
-    });
-    client.onConnectionLost = function (responseObject) {
-      console.log("Connection lost: " + responseObject.errorMessage);
-    };
-    setUserRegion(location);
-    client.onMessageArrived = (message) => {
-      if (message.destinationName == `${collar.id}/gps`) {
-        const a = message.payloadString.split(", ");
-        const newLat = parseFloat(a[0]);
-        const newLon = parseFloat(a[1]);
-        if (newLat && newLon != 0.0) {
-          setView(false);
-          updateCollarPosition(newLat, newLon);
-        }
-      } else if (message.destinationName == `${collar.id}/receiveLoc`) {
-        const array = message.payloadString;
-        locations = JSON.parse(array.trim());
-        polyline = locations.map((location) => ({
-          latitude: location.latitude,
-          longitude: location.longitude,
-        }));
-        setPolyline(polyline);
-      }
-    };
-  }, [location]);
-
-  const updateCollarPosition = (newLat, newLon) => {
-    const newRegion = {
-      latitude: newLat,
-      longitude: newLon,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    };
-    setCollarRegion(newRegion);
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(newRegion, 1000);
-    }
-  };
+  }, []);
 
   const hide = () => {
     setShowBottomSheet(false);
@@ -172,13 +65,8 @@ export default function ProductPage(props) {
     navigation.replace("Home", { email: email, location: location });
   };
 
-  const GoRoute = () => {
-    navigation.replace("Route", {
-      email: email,
-      location: location,
-      collar: collar,
-      polylineCoords: polylineCoords,
-    });
+  const GoMap = () => {
+    navigation.navigate("Product", { collar, email, location });
   };
 
   return (
@@ -200,34 +88,37 @@ export default function ProductPage(props) {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { alignSelf: "flex-end", marginRight: 10 }]}
-            onPress={GoRoute}
+            onPress={GoMap}
           >
-            <Text style={styles.buttonText}>View Route</Text>
+            <Text style={styles.buttonText}>Go Map</Text>
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.desContainer}>
-        {userRegion.latitude && userRegion.longitude && (
-          <MapView
-            showsUserLocation={true}
-            showsIndoorLevelPicker={false}
-            showsBuildings={false}
-            ref={mapRef}
-            region={userRegion}
-            provider={PROVIDER_GOOGLE}
-            loadingEnabled={true}
-            loadingIndicatorColor="#e21d1d"
-            onMapError={(error) => console.log("Map error:", error)}
-            style={{
-              flex: 1,
-              width: "100%",
-              height: "90%",
-            }}
-          >
-            <CustomMarker collar={collar} />
-          </MapView>
-        )}
-        <CustomText show={view} />
+        <MapView
+          showsUserLocation={true}
+          showsIndoorLevelPicker={false}
+          showsBuildings={false}
+          onMapReady={() => {
+            mapRef.current.animateToRegion(region, 0);
+          }}
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          loadingEnabled={true}
+          loadingIndicatorColor="#e21d1d"
+          onMapError={(error) => console.log("Map error:", error)}
+          style={{
+            flex: 1,
+            width: "100%",
+            height: "90%",
+          }}
+        >
+          <Polyline
+            coordinates={polylineCoords}
+            strokeWidth={2}
+            strokeColor="#000"
+          />
+        </MapView>
         <TouchableOpacity
           style={{
             position: "absolute",

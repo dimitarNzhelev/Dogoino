@@ -27,7 +27,7 @@ export default function HomeScreen(props) {
   async function getData() {
     try {
       const dbInstance = collection(firestore, "users", email, "collars");
-      const userDocs = await getDocs(dbInstance); // changed from `collection` to `getDocs`
+      const userDocs = await getDocs(dbInstance);
       const mappedCollars = userDocs.docs.map((doc) => ({
         id: doc.data().id,
         name: doc.data().name,
