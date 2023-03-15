@@ -10,7 +10,7 @@ import {
   Image,
 } from "react-native";
 import { firestore } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, deleteDoc } from "firebase/firestore"; // added getDocs import
 import { useNavigation } from "@react-navigation/native";
 import { Client, Message } from "paho-mqtt";
 
@@ -27,10 +27,11 @@ export default function HomeScreen(props) {
   async function getData() {
     try {
       const dbInstance = collection(firestore, "users", email, "collars");
-      const userDocs = await getDocs(dbInstance);
+      const userDocs = await getDocs(dbInstance); // changed from `collection` to `getDocs`
       const mappedCollars = userDocs.docs.map((doc) => ({
         id: doc.data().id,
         name: doc.data().name,
+        type: doc.data().type,
       }));
       return mappedCollars;
     } catch (error) {
@@ -41,20 +42,33 @@ export default function HomeScreen(props) {
   function PressHandler(collar) {
     navigation.navigate("Product", { collar, email, location });
   }
-  function CheckStatus(status) {
-    if (status === "Online") {
-      return (
-        <Text style={{ textAlign: "right", color: "#95f783", fontSize: 19 }}>
-          {status}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={{ textAlign: "right", color: "#f2748d", fontSize: 19 }}>
-          {status}
-        </Text>
-      );
+
+  async function DeleteCollar(name) {
+    try {
+      const userDoc = await firestore.collection("users").doc(email).get();
+      if (!userDoc.exists) {
+        throw new Error(`User ${email} not found`);
+      }
+
+      const collarsRef = userDoc.ref.collection("collars");
+      const querySnapshot = await collarsRef.where("name", "==", name).get();
+
+      if (querySnapshot.empty) {
+        throw new Error(`Collar ${name} not found for user ${email}`);
+      }
+
+      const batch = firestore.batch();
+      querySnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+
+      console.log(`Collar ${name} deleted for user ${email}`);
+    } catch (error) {
+      console.error(error);
     }
+    navigation.replace("Home", {
+      email: email,
+      location: location,
+    });
   }
 
   useEffect(() => {
@@ -129,9 +143,10 @@ export default function HomeScreen(props) {
                 <View style={styles.headerContainer}>
                   <Text style={styles.headerText}>{collar.name}</Text>
                 </View>
+              </Pressable>
+              <Pressable onPress={() => DeleteCollar(collar.name)}>
                 <View style={styles.statusContainer}>
-                  <Text style={styles.idText}>ID: {collar.id}</Text>
-                  {CheckStatus(collar.status)}
+                  <Text style={styles.deleteText}>Delete</Text>
                 </View>
               </Pressable>
             </Animated.View>
@@ -147,7 +162,10 @@ export default function HomeScreen(props) {
       >
         <TouchableOpacity
           onPress={() =>
-            navigation.navigate("RegisterCollar", { email: email })
+            navigation.navigate("RegisterCollar", {
+              email: email,
+              location: location,
+            })
           }
           style={styles.RegisterCollar}
         >
@@ -197,6 +215,12 @@ const styles = StyleSheet.create({
   statusContainer: {
     fontSize: 18,
     margin: 12,
+  },
+  deleteText: {
+    fontSize: 16,
+    color: "lightgrey",
+    textAlign: "right",
+    marginRight: 18,
   },
   idText: {
     fontSize: 14,

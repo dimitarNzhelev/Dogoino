@@ -7,10 +7,14 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
+  ScrollView,
 } from "react-native";
 import Paho from "paho-mqtt";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import BottomSheet from "./BottomSheet.js";
+import { collection, getDocs } from "firebase/firestore";
+import { firestore } from "../firebase";
+import Dog from "../Dog";
 
 function CustomText(props) {
   if (props.show) {
@@ -40,7 +44,6 @@ export default function ProductPage(props) {
   const collar = props.route.params.collar;
   const email = props.route.params.email;
   const location = props.route.params.location;
-  console.log(location, "ProductMap");
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const [view, setView] = useState(true);
@@ -49,8 +52,63 @@ export default function ProductPage(props) {
     latitude: 0,
     longitude: 0,
   });
+  const [logs, setLogs] = useState([]);
 
+  function CustomMarker({ collar }) {
+    console.log(collar.type);
+    if (collar.type === "cat") {
+      return (
+        <Marker
+          coordinate={collarRegion}
+          title={collar.name}
+          width={60}
+          height={60}
+          icon={require("../src/img/cat.png")}
+        />
+      );
+    } else if (collar.type === "dog") {
+      return (
+        <Marker coordinate={collarRegion} title={collar.name}>
+          <View>
+            <Dog />
+          </View>
+        </Marker>
+      );
+    } else {
+      return (
+        <Marker coordinate={collarRegion} title={collar.name}>
+          <View style={styles.core} />
+        </Marker>
+      );
+    }
+  }
+
+  async function getLogs() {
+    try {
+      const dbinstance = collection(
+        firestore,
+        "users",
+        email,
+        "collars",
+        collar.name,
+        "logs"
+      );
+      const querySnapshot = await getDocs(dbinstance);
+      const logs = querySnapshot.docs.map((doc) => doc.data());
+      console.log(logs);
+      return logs;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
   useEffect(() => {
+    async function fetchLogs() {
+      const logs = await getLogs();
+      setLogs(logs);
+    }
+    fetchLogs();
+
     const client = new Paho.Client(
       "broker.hivemq.com",
       Number(8000),
@@ -75,7 +133,6 @@ export default function ProductPage(props) {
       if (newLat && newLon != 0.0) {
         setView(false);
         updateCollarPosition(newLat, newLon);
-        //setUserRegion(newLat, newLon);
       }
     };
     console.log("Map Center Region", userRegion);
@@ -99,7 +156,7 @@ export default function ProductPage(props) {
   };
 
   const GoHome = () => {
-    navigation.replace("Home", { email: email });
+    navigation.replace("Home", { email: email, location: location });
   };
 
   return (
@@ -138,11 +195,7 @@ export default function ProductPage(props) {
               width: "100%",
             }}
           >
-            <Marker coordinate={collarRegion} title={collar.name}>
-              <View style={styles.circle}>
-                <View style={styles.core} />
-              </View>
-            </Marker>
+            <CustomMarker collar={collar} />
           </MapView>
         )}
         <CustomText show={view} />
@@ -161,14 +214,16 @@ export default function ProductPage(props) {
       </View>
       <BottomSheet show={showBottomSheet} height={290} onOuterClick={hide}>
         <View style={styles.bottomSheetContent}>
-          <Text style={styles.bottomSheetText}>Name: {collar.name}</Text>
-          <Text style={styles.bottomSheetText}>ID: {collar.id}</Text>
-          <Text style={styles.bottomSheetText}>
-            Latitude: {collarRegion.latitude}
-          </Text>
-          <Text style={styles.bottomSheetText}>
-            Longitude: {collarRegion.longitude}
-          </Text>
+          <ScrollView>
+            {logs.map((log, key) => {
+              const logValue = Object.values(log)[0];
+              return (
+                <Text key={key + 1} style={styles.bottomSheetText}>
+                  Log {key + 1}: {logValue}
+                </Text>
+              );
+            })}
+          </ScrollView>
           <Pressable onPress={hide} style={styles.bottomSheetCloseButton}>
             <Text style={styles.buttonText}>X Close</Text>
           </Pressable>

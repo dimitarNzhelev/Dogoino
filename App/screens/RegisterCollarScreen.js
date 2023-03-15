@@ -11,9 +11,10 @@ import { setDoc, doc } from "firebase/firestore";
 import { firestore } from "../firebase";
 
 function RegisterCollar(props) {
-  const { email } = props.route.params;
+  const { email, location } = props.route.params;
   const [id, setid] = useState();
   const [name, setName] = useState();
+  const [type, setType] = useState();
 
   const navigation = useNavigation();
 
@@ -22,9 +23,10 @@ function RegisterCollar(props) {
       await setDoc(doc(firestore, "users", email, "collars", name), {
         name: name,
         id: id,
-        status: "offline",
+        logs: [],
+        type: type.toLowerCase(),
       });
-      navigation.replace("Home", { email: email });
+      navigation.replace("Home", { email: email, location: location });
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -43,6 +45,11 @@ function RegisterCollar(props) {
         style={styles.textInput}
         placeholder="Collar Id"
         onChangeText={(id) => setid(id)}
+      />
+      <TextInput
+        style={styles.textInput}
+        placeholder="Dog, Cat, etc..."
+        onChangeText={(type) => setType(type)}
       />
 
       <TouchableOpacity style={styles.registerButton} onPress={RegisterHandler}>
