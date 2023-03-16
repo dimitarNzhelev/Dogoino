@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     zIndex: 1,
-    backgroundColor: "#369399",
+    backgroundColor: "#183e42",
     borderRadius: 16,
   },
 });

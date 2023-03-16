@@ -17,7 +17,7 @@ import { Client, Message } from "paho-mqtt";
 export default function HomeScreen(props) {
   const { email } = props.route.params;
   const [collars, setCollars] = useState([]);
-  const [lockDoorColor, setLockDoorColor] = useState("red");
+  const [lockDoorColor, setLockDoorColor] = useState("#222222");
   const [image, setImage] = useState(require("../src/img/lock.png"));
   const navigation = useNavigation();
   const location = props.route.params.location;
@@ -104,11 +104,11 @@ export default function HomeScreen(props) {
   }, [fadeAnim]);
 
   function toggleLockDoorColor() {
-    if (lockDoorColor === "green") {
-      setLockDoorColor("red");
+    if (lockDoorColor === "#369399") {
+      setLockDoorColor("#222222");
       setImage(require("../src/img/lock.png"));
     } else {
-      setLockDoorColor("green");
+      setLockDoorColor("#369399");
       setImage(require("../src/img/unlock.png"));
     }
     const client = new Client(
@@ -117,7 +117,7 @@ export default function HomeScreen(props) {
       "reactApplication"
     );
 
-    if (lockDoorColor === "green") {
+    if (lockDoorColor === "#369399") {
       console.log("Connected successfully");
       client.connect({
         onSuccess: () => {
@@ -129,7 +129,7 @@ export default function HomeScreen(props) {
           });
         },
       });
-    } else if (lockDoorColor === "red") {
+    } else if (lockDoorColor === "#222222") {
       console.log("Connected successfully");
       client.connect({
         onSuccess: () => {
@@ -145,7 +145,8 @@ export default function HomeScreen(props) {
   }
 
   return (
-    <View style={{ backgroundColor: "white", flex: 1 }}>
+    <View style={{ backgroundColor: "#183e42", flex: 1 }}>
+      {/* // "#BDBEA9" */}
       <View
         style={{
           flexDirection: "row",
@@ -155,9 +156,15 @@ export default function HomeScreen(props) {
           paddingBottom: 10,
           paddingTop: 50,
           backgroundColor: "#369399",
+          borderRadius: 15,
         }}
       >
-        <Text style={[styles.headerText, { fontSize: 28, color: "lightgrey" }]}>
+        <Text
+          style={[
+            styles.headerText,
+            { fontSize: 28, color: "lightgrey", fontFamily: "sans-serif" },
+          ]}
+        >
           Home
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -190,11 +197,13 @@ export default function HomeScreen(props) {
                   <Text style={styles.headerText}>{collar.name}</Text>
                 </View>
               </Pressable>
-              <Pressable onPress={() => DeleteCollar(collar.name)}>
-                <View style={styles.statusContainer}>
-                  <Text style={styles.deleteText}>Delete</Text>
-                </View>
-              </Pressable>
+              <View style={{ alignItems: "flex-end" }}>
+                <Pressable onPress={() => DeleteCollar(collar.name)}>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.deleteText}>Delete</Text>
+                  </View>
+                </Pressable>
+              </View>
             </Animated.View>
           ))}
         </ScrollView>
@@ -228,39 +237,54 @@ const styles = StyleSheet.create({
     margin: 40,
     marginBottom: 0,
     backgroundColor: "#369399",
-    borderRadius: 10,
+    borderRadius: 20,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   headerContainer: {
     backgroundColor: "#045c62",
     padding: 4,
     paddingBottom: 10,
     paddingTop: 10,
-    borderRadius: 10,
+    borderRadius: 20,
   },
   headerText: {
     fontSize: 18,
-    marginLeft: 10,
+    marginLeft: 20,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
 
   listTextContainer: {
     fontSize: 16,
     textAlign: "left",
+    fontFamily: "sans-serif",
   },
   statusContainer: {
     fontSize: 18,
+    fontFamily: "sans-serif",
     margin: 12,
+    width: "30%",
   },
   deleteText: {
     fontSize: 16,
     color: "lightgrey",
     textAlign: "right",
     marginRight: 18,
+    fontFamily: "sans-serif",
   },
   idText: {
     fontSize: 14,
     textAlign: "right",
     marginRight: 20,
+    fontFamily: "sans-serif",
   },
   RegisterCollar: {
     padding: 10,
@@ -277,7 +301,6 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 40,
     marginTop: 40,
-
     marginLeft: 40,
     marginRight: 40,
     borderRadius: 20,
@@ -285,6 +308,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
   button: {
     padding: 10,

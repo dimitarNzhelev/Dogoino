@@ -60,9 +60,21 @@ function LoginScreen() {
             fontSize: 20,
             paddingTop: 0,
             textAlign: "center",
+            fontFamily: "sans-seri",
           }}
         >
-          If you don't have an account you can register here:
+          If you don't have an account
+        </Text>
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 20,
+            paddingTop: 0,
+            fontFamily: "sans-seri",
+            textAlign: "center",
+          }}
+        >
+          you can register here:
         </Text>
         <TouchableOpacity
           style={styles.registerButton}
@@ -89,7 +101,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "white",
     borderRadius: 6,
-    fontSize: 24,
+    fontSize: 20,
+    fontFamily: "sans-serif",
+    padding: 5,
     paddingLeft: 10,
     marginBottom: 10,
     backgroundColor: "white",
@@ -103,11 +117,13 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     color: "white",
+    fontFamily: "sans-serif",
   },
   loginButton: {
     marginTop: "5%",
     alignItems: "center",
     justifyContent: "center",
+    fontFamily: "sans-seri",
     borderRadius: 6,
     backgroundColor: "#379799",
     padding: 10,
@@ -119,6 +135,8 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: "5%",
+    fontFamily: "sans-serif",
+    marginBottom: "20%",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 6,

@@ -29,7 +29,9 @@ function CustomText(props) {
           borderRadius: 20,
         }}
       >
-        <Text style={{ fontSize: 26, color: "white" }}>
+        <Text
+          style={{ fontSize: 26, color: "white", fontFamily: "sans-serif" }}
+        >
           Uploading GPS location...
         </Text>
       </View>
@@ -108,10 +110,6 @@ export default function ProductPage(props) {
       setLogs(logs);
     }
     fetchLogs();
-
-    // if (polyline != undefined) {
-    //   setPolyline(polyline);
-    // }
 
     const client = new Client(
       "broker.hivemq.com",
@@ -280,6 +278,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     padding: 10,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
 
   desContainer: {
@@ -313,6 +312,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
     borderColor: "lightgrey",
+    fontFamily: "sans-serif",
   },
   circle: {
     height: 20,
@@ -333,15 +333,18 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
   bottomSheetContent: {
     padding: 40,
     marginTop: 10,
     alignItems: "center",
+    fontFamily: "sans-serif",
   },
   bottomSheetText: {
     fontSize: 21,
     marginBottom: 10,
+    fontFamily: "sans-serif",
   },
   bottomSheetCloseButton: {
     marginTop: 10,
@@ -349,5 +352,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     borderColor: "lightgrey",
+    fontFamily: "sans-serif",
   },
 });

@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     padding: 10,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
 
   desContainer: {
@@ -224,6 +225,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     color: "lightgrey",
+    fontFamily: "sans-serif",
   },
   bottomSheetContent: {
     padding: 40,
@@ -233,6 +235,7 @@ const styles = StyleSheet.create({
   bottomSheetText: {
     fontSize: 21,
     marginBottom: 10,
+    fontFamily: "sans-serif",
   },
   bottomSheetCloseButton: {
     marginTop: 10,
@@ -240,5 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     borderColor: "lightgrey",
+    fontFamily: "sans-serif",
   },
 });

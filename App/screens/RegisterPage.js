@@ -77,12 +77,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#045c62",
   },
-
   textInput: {
     borderWidth: 2,
     borderColor: "white",
     borderRadius: 6,
-    fontSize: 24,
+    fontSize: 20,
+    fontFamily: "sans-serif",
+    padding: 5,
     paddingLeft: 10,
     marginBottom: 10,
     backgroundColor: "white",
@@ -94,10 +95,12 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 28,
+    fontFamily: "sans-serif",
     color: "white",
   },
   registerButton: {
     marginTop: "5%",
+    fontFamily: "sans-serif",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 6,
