@@ -52,8 +52,7 @@ export default function ProductPage(props) {
     latitude: 0,
     longitude: 0,
   });
-  // const polyline = props.route.params.polyline;
-  // console.log(polyline);
+
   const [logs, setLogs] = useState([]);
   const [polylineCoords, setPolyline] = useState();
 
