@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, LogBox } from "react-native";
+import { Text, TouchableOpacity, LogBox } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { auth } from "./firebase";
@@ -9,7 +9,8 @@ import RegisterScreen from "./screens/RegisterPage";
 import RegisterCollar from "./screens/RegisterCollarScreen";
 import React, { useState, useEffect } from "react";
 import useLocation from "./getLocation";
-import Route from "./screens/Route";
+import RouteScreen from "./screens/Route";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
       const locationData = await useLocation();
       setLocation(locationData);
     }
+    fetchLocation();
   }, []);
 
   return (
@@ -39,13 +41,20 @@ export default function App() {
               backgroundColor: "#369399",
             },
             headerShadowVisible: true,
-            headerLeft: () => "",
+            headerTitleAlign: "center",
+            // headerRight: () => (
+            //   <AddCollar
+            //     navigation={navigation}
+            //     email={email}
+            //     location={location}
+            //   />
+            // ),
             headerTitleStyle: {
               fontSize: 21,
               fontWeight: "400",
               color: "lightgrey",
             },
-            headerRight: () => (
+            headerLeft: () => (
               <HomeScreenSignOutButton navigation={navigation} />
             ),
           })}
@@ -71,7 +80,7 @@ export default function App() {
         <Stack.Screen
           options={{ headerShown: false }}
           name="Route"
-          component={Route}
+          component={RouteScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -94,3 +103,21 @@ function HomeScreenSignOutButton({ navigation }) {
     </TouchableOpacity>
   );
 }
+
+// function AddCollar({ navigation, location }) {
+//   const { email } = route.params;
+
+//   return (
+//     <TouchableOpacity
+//       onPress={() =>
+//         navigation.navigate("RegisterCollar", {
+//           email: email,
+//           location: location,
+//         })
+//       }
+//       style={styles.RegisterCollar}
+//     >
+//       <Text style={{ color: "lightgrey", fontSize: 19 }}>a</Text>
+//     </TouchableOpacity>
+//   );
+// }

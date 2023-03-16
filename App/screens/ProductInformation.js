@@ -188,6 +188,7 @@ export default function ProductPage(props) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          paddingTop: 10,
         }}
       >
         <Text style={styles.headerText}>{collar.name}</Text>
@@ -306,6 +307,7 @@ const styles = StyleSheet.create({
     color: "#369399",
     borderRadius: 100,
     borderWidth: 1,
+    borderColor: "lightgrey",
   },
   circle: {
     height: 20,
@@ -325,6 +327,7 @@ const styles = StyleSheet.create({
 
   buttonText: {
     fontSize: 18,
+    color: "lightgrey",
   },
   bottomSheetContent: {
     padding: 40,
@@ -338,7 +341,8 @@ const styles = StyleSheet.create({
   bottomSheetCloseButton: {
     marginTop: 10,
     padding: 16,
-    backgroundColor: "white",
     borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "lightgrey",
   },
 });

@@ -159,19 +159,7 @@ export default function HomeScreen(props) {
           justifyContent: "center",
           alignItems: "center",
         }}
-      >
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("RegisterCollar", {
-              email: email,
-              location: location,
-            })
-          }
-          style={styles.RegisterCollar}
-        >
-          <Image source={require("../src/img/plus.png")} />
-        </TouchableOpacity>
-      </Animated.View>
+      ></Animated.View>
       <Animated.View style={{ opacity: fadeAnim }}>
         <TouchableOpacity
           onPress={() => toggleLockDoorColor()}
