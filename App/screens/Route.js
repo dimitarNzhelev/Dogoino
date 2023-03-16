@@ -66,7 +66,12 @@ export default function RouteScreen(props) {
   };
 
   const GoMap = () => {
-    navigation.navigate("Product", { collar, email, location });
+    navigation.replace("Product", {
+      email: email,
+      location: location,
+      collar: collar,
+      polylineCoords: polylineCoords,
+    });
   };
 
   return (

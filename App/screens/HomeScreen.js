@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { firestore } from "../firebase";
-import { collection, getDocs, deleteDoc } from "firebase/firestore"; // added getDocs import
+import { auth, firestore } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Client, Message } from "paho-mqtt";
 
@@ -20,9 +20,23 @@ export default function HomeScreen(props) {
   const [lockDoorColor, setLockDoorColor] = useState("red");
   const [image, setImage] = useState(require("../src/img/lock.png"));
   const navigation = useNavigation();
-
   const location = props.route.params.location;
-  console.log(location, "HomeScreen");
+
+  const signoutHandler = () => {
+    auth
+      .signOut()
+      .then(() => {
+        navigation.replace("Login");
+      })
+      .catch((error) => alert(error.message));
+  };
+
+  function AddCollar() {
+    navigation.navigate("RegisterCollar", {
+      email,
+      location,
+    });
+  }
 
   async function getData() {
     try {
@@ -132,6 +146,38 @@ export default function HomeScreen(props) {
 
   return (
     <View style={{ backgroundColor: "white", flex: 1 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: 20,
+          paddingBottom: 10,
+          paddingTop: 50,
+          backgroundColor: "#369399",
+        }}
+      >
+        <Text style={[styles.headerText, { fontSize: 28, color: "lightgrey" }]}>
+          Home
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { alignSelf: "flex-start", marginRight: 10 },
+            ]}
+            onPress={signoutHandler}
+          >
+            <Text style={styles.buttonText}>Sign out</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { alignSelf: "flex-end", marginRight: 10 }]}
+            onPress={AddCollar}
+          >
+            <Text style={styles.buttonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View style={styles.container}>
         <ScrollView>
           {collars.map((collar, key) => (
@@ -176,7 +222,7 @@ export default function HomeScreen(props) {
 }
 const styles = StyleSheet.create({
   container: {
-    height: 390,
+    height: "60%",
   },
   listContainer: {
     margin: 40,
@@ -196,6 +242,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: "lightgrey",
   },
+
   listTextContainer: {
     fontSize: 16,
     textAlign: "left",
@@ -234,5 +281,20 @@ const styles = StyleSheet.create({
     marginLeft: 40,
     marginRight: 40,
     borderRadius: 20,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "lightgrey",
+  },
+  button: {
+    padding: 10,
+    paddingBottom: 5,
+    paddingTop: 3,
+    margin: 0,
+    marginRight: 15,
+    color: "#369399",
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "lightgrey",
   },
 });
