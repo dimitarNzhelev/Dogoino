@@ -9,28 +9,80 @@ import {
 } from "react-native";
 import { setDoc, doc } from "firebase/firestore";
 import { firestore } from "../firebase";
+import { useFonts } from "expo-font";
+import { collection, addDoc } from "firebase/firestore";
 
 function RegisterCollar(props) {
   const { email, location } = props.route.params;
   const [id, setid] = useState();
   const [name, setName] = useState();
   const [type, setType] = useState();
+  const [loaded] = useFonts({
+    "OpenSans-Medium": require("../assets/fonts/OpenSans-Medium.ttf"),
+  });
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#045c62",
+    },
+
+    textInput: {
+      borderWidth: 2,
+      borderColor: "white",
+      borderRadius: 6,
+      fontSize: 20,
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      padding: 5,
+      paddingLeft: 10,
+      marginBottom: 10,
+      backgroundColor: "white",
+      width: "75%",
+    },
+    header: {
+      marginBottom: "10%",
+      marginTop: 100,
+      alignItems: "center",
+    },
+    headerText: {
+      fontSize: 28,
+      color: "white",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    registerButton: {
+      marginTop: "5%",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      marginBottom: "20%",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 6,
+      backgroundColor: "#379799",
+      padding: 10,
+      width: "25%",
+    },
+  });
 
   const navigation = useNavigation();
 
   async function RegisterHandler() {
     try {
-      await setDoc(doc(firestore, "users", email, "collars", name), {
+      const collarDocRef = doc(firestore, "users", email, "collars", name);
+      await setDoc(collarDocRef, {
         name: name,
         id: id,
-        logs: [],
         type: type.toLowerCase(),
+      });
+      const logsCollectionRef = collection(collarDocRef, "logs");
+      await addDoc(logsCollectionRef, {
+        message: "Collar registered",
       });
       navigation.replace("Home", { email: email, location: location });
     } catch (e) {
       console.error("Error adding document: ", e);
     }
   }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -60,46 +112,3 @@ function RegisterCollar(props) {
 }
 
 export default RegisterCollar;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#045c62",
-  },
-
-  textInput: {
-    borderWidth: 2,
-    borderColor: "white",
-    borderRadius: 6,
-    fontSize: 20,
-    fontFamily: "sans-serif",
-    padding: 5,
-    paddingLeft: 10,
-    marginBottom: 10,
-    backgroundColor: "white",
-    width: "75%",
-  },
-  header: {
-    marginBottom: "10%",
-    marginTop: 100,
-    alignItems: "center",
-  },
-  headerText: {
-    fontSize: 28,
-    color: "white",
-    fontFamily: "sans-serif",
-  },
-  registerButton: {
-    marginTop: "5%",
-    fontFamily: "sans-serif",
-    marginBottom: "20%",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-    backgroundColor: "#379799",
-    padding: 10,
-    width: "25%",
-  },
-});

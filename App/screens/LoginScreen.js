@@ -17,7 +17,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loaded] = useFonts({
-    "Roboto-Black": require("../assets/fonts/Roboto-Black.ttf"),
+    "OpenSans-Medium": require("../assets/fonts/OpenSans-Medium.ttf"),
   });
 
   const navigation = useNavigation();
@@ -34,7 +34,7 @@ export default function LoginScreen() {
       borderColor: "white",
       borderRadius: 6,
       fontSize: 20,
-      fontFamily: loaded ? "Roboto-Black" : "System",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
       padding: 5,
       paddingLeft: 10,
       marginBottom: 10,
@@ -51,11 +51,11 @@ export default function LoginScreen() {
       marginTop: "5%",
       alignItems: "center",
       justifyContent: "center",
-      fontFamily: loaded ? "Roboto-Black" : "System",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
       borderRadius: 6,
       backgroundColor: "#379799",
       padding: 10,
-      width: "18%",
+      width: "23%",
     },
 
     registerContainer: {
@@ -64,7 +64,7 @@ export default function LoginScreen() {
     },
     registerButton: {
       marginTop: "5%",
-      fontFamily: loaded ? "Roboto-Black" : "System",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
       marginBottom: "20%",
       alignItems: "center",
       justifyContent: "center",
@@ -98,10 +98,10 @@ export default function LoginScreen() {
           style={{
             fontSize: 28,
             color: "white",
-            fontFamily: loaded ? "Roboto-Black" : "System",
+            fontFamily: loaded ? "OpenSans-Medium" : "System",
           }}
         >
-          Login
+          Log in
         </Text>
       </View>
       <TextInput
@@ -121,10 +121,10 @@ export default function LoginScreen() {
           style={{
             color: "#fff",
             fontSize: 18,
-            fontFamily: loaded ? "Roboto-Black" : "System",
+            fontFamily: loaded ? "OpenSans-Medium" : "System",
           }}
         >
-          Login
+          Log in
         </Text>
       </TouchableOpacity>
       <View style={styles.registerContainer}>
@@ -134,7 +134,7 @@ export default function LoginScreen() {
             fontSize: 20,
             paddingTop: 0,
             textAlign: "center",
-            fontFamily: loaded ? "Roboto-Black" : "System",
+            fontFamily: loaded ? "OpenSans-Medium" : "System",
           }}
         >
           If you don't have an account
@@ -144,7 +144,7 @@ export default function LoginScreen() {
             color: "#fff",
             fontSize: 20,
             paddingTop: 0,
-            fontFamily: loaded ? "Roboto-Black" : "System",
+            fontFamily: loaded ? "OpenSans-Medium" : "System",
             textAlign: "center",
           }}
         >
@@ -158,7 +158,7 @@ export default function LoginScreen() {
             style={{
               color: "#fff",
               fontSize: 18,
-              fontFamily: loaded ? "Roboto-Black" : "System",
+              fontFamily: loaded ? "OpenSans-Medium" : "System",
             }}
           >
             Register

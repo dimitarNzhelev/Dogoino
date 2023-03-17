@@ -13,6 +13,7 @@ import { auth, firestore } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Client, Message } from "paho-mqtt";
+import { useFonts } from "expo-font";
 
 export default function HomeScreen(props) {
   const { email } = props.route.params;
@@ -21,6 +22,107 @@ export default function HomeScreen(props) {
   const [image, setImage] = useState(require("../src/img/lock.png"));
   const navigation = useNavigation();
   const location = props.route.params.location;
+  const [loaded] = useFonts({
+    "OpenSans-Medium": require("../assets/fonts/OpenSans-Medium.ttf"),
+  });
+
+  const styles = StyleSheet.create({
+    container: {
+      height: "60%",
+    },
+    listContainer: {
+      margin: 40,
+      marginBottom: 0,
+      backgroundColor: "#369399",
+      borderRadius: 20,
+
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    headerContainer: {
+      backgroundColor: "#045c62",
+      padding: 4,
+      paddingBottom: 10,
+      paddingTop: 10,
+      borderRadius: 20,
+    },
+    headerText: {
+      fontSize: 18,
+      marginLeft: 20,
+      color: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+
+    listTextContainer: {
+      fontSize: 16,
+      textAlign: "left",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    statusContainer: {
+      fontSize: 18,
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      margin: 12,
+      width: "25%",
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: "lightgrey",
+      padding: 2,
+    },
+    deleteText: {
+      fontSize: 16,
+      color: "lightgrey",
+      textAlign: "right",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      padding: 5,
+    },
+    idText: {
+      fontSize: 14,
+      textAlign: "right",
+      marginRight: 20,
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    RegisterCollar: {
+      padding: 10,
+      width: 55,
+      borderRadius: 100,
+      borderWidth: 1,
+      marginTop: 20,
+      backgroundColor: "#045c62",
+    },
+    lockDoor: {
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "red",
+      padding: 20,
+      margin: 40,
+      marginTop: 40,
+      marginLeft: 40,
+      marginRight: 40,
+      borderRadius: 20,
+    },
+    buttonText: {
+      fontSize: 18,
+      color: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    button: {
+      padding: 10,
+      paddingBottom: 5,
+      paddingTop: 3,
+      margin: 0,
+      marginRight: 15,
+      color: "#369399",
+      borderRadius: 100,
+      borderWidth: 1,
+      borderColor: "lightgrey",
+    },
+  });
 
   const signoutHandler = () => {
     auth
@@ -161,7 +263,11 @@ export default function HomeScreen(props) {
         <Text
           style={[
             styles.headerText,
-            { fontSize: 28, color: "lightgrey", fontFamily: "sans-serif" },
+            {
+              fontSize: 28,
+              color: "lightgrey",
+              fontFamily: loaded ? "OpenSans-Medium" : "System",
+            },
           ]}
         >
           Home
@@ -228,96 +334,3 @@ export default function HomeScreen(props) {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    height: "60%",
-  },
-  listContainer: {
-    margin: 40,
-    marginBottom: 0,
-    backgroundColor: "#369399",
-    borderRadius: 20,
-
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  headerContainer: {
-    backgroundColor: "#045c62",
-    padding: 4,
-    paddingBottom: 10,
-    paddingTop: 10,
-    borderRadius: 20,
-  },
-  headerText: {
-    fontSize: 18,
-    marginLeft: 20,
-    color: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-
-  listTextContainer: {
-    fontSize: 16,
-    textAlign: "left",
-    fontFamily: "sans-serif",
-  },
-  statusContainer: {
-    fontSize: 18,
-    fontFamily: "sans-serif",
-    margin: 12,
-    width: "30%",
-  },
-  deleteText: {
-    fontSize: 16,
-    color: "lightgrey",
-    textAlign: "right",
-    marginRight: 18,
-    fontFamily: "sans-serif",
-  },
-  idText: {
-    fontSize: 14,
-    textAlign: "right",
-    marginRight: 20,
-    fontFamily: "sans-serif",
-  },
-  RegisterCollar: {
-    padding: 10,
-    width: 55,
-    borderRadius: 100,
-    borderWidth: 1,
-    marginTop: 20,
-    backgroundColor: "#045c62",
-  },
-  lockDoor: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "red",
-    padding: 20,
-    margin: 40,
-    marginTop: 40,
-    marginLeft: 40,
-    marginRight: 40,
-    borderRadius: 20,
-  },
-  buttonText: {
-    fontSize: 18,
-    color: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-  button: {
-    padding: 10,
-    paddingBottom: 5,
-    paddingTop: 3,
-    margin: 0,
-    marginRight: 15,
-    color: "#369399",
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: "lightgrey",
-  },
-});

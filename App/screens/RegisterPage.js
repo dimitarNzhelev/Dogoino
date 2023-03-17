@@ -9,13 +9,56 @@ import {
 } from "react-native";
 import { setDoc, doc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
+import { useFonts } from "expo-font";
 
 function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loaded] = useFonts({
+    "OpenSans-Medium": require("../assets/fonts/OpenSans-Medium.ttf"),
+  });
 
   const navigation = useNavigation();
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#045c62",
+    },
+    textInput: {
+      borderWidth: 2,
+      borderColor: "white",
+      borderRadius: 6,
+      fontSize: 20,
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      padding: 5,
+      paddingLeft: 10,
+      marginBottom: 10,
+      backgroundColor: "white",
+      width: "75%",
+    },
+    header: {
+      marginBottom: "10%",
+      alignItems: "center",
+    },
+    headerText: {
+      fontSize: 28,
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      color: "white",
+    },
+    registerButton: {
+      marginTop: "5%",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 6,
+      backgroundColor: "#379799",
+      padding: 10,
+      width: "25%",
+    },
+  });
 
   const RegisterHandler = () => {
     if (password !== confirmPassword) {
@@ -62,50 +105,18 @@ function RegisterScreen() {
       />
 
       <TouchableOpacity style={styles.registerButton} onPress={RegisterHandler}>
-        <Text style={{ color: "#fff", fontSize: 18 }}>Register</Text>
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 18,
+            fontFamily: loaded ? "OpenSans-Medium" : "System",
+          }}
+        >
+          Register
+        </Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 export default RegisterScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#045c62",
-  },
-  textInput: {
-    borderWidth: 2,
-    borderColor: "white",
-    borderRadius: 6,
-    fontSize: 20,
-    fontFamily: "sans-serif",
-    padding: 5,
-    paddingLeft: 10,
-    marginBottom: 10,
-    backgroundColor: "white",
-    width: "75%",
-  },
-  header: {
-    marginBottom: "10%",
-    alignItems: "center",
-  },
-  headerText: {
-    fontSize: 28,
-    fontFamily: "sans-serif",
-    color: "white",
-  },
-  registerButton: {
-    marginTop: "5%",
-    fontFamily: "sans-serif",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-    backgroundColor: "#379799",
-    padding: 10,
-    width: "25%",
-  },
-});

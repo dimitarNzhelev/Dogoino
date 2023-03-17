@@ -15,31 +15,7 @@ import BottomSheet from "./BottomSheet.js";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebase";
 import Dog from "../Dog";
-
-function CustomText(props) {
-  if (props.show) {
-    return (
-      <View
-        style={{
-          backgroundColor: "#369399",
-          alignSelf: "center",
-          position: "absolute",
-          marginTop: 50,
-          padding: 10,
-          borderRadius: 20,
-        }}
-      >
-        <Text
-          style={{ fontSize: 26, color: "white", fontFamily: "sans-serif" }}
-        >
-          Uploading GPS location...
-        </Text>
-      </View>
-    );
-  } else {
-    return null;
-  }
-}
+import { useFonts } from "expo-font";
 
 export default function ProductPage(props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
@@ -54,9 +30,132 @@ export default function ProductPage(props) {
     latitude: 0,
     longitude: 0,
   });
+  const [loaded] = useFonts({
+    "OpenSans-Medium": require("../assets/fonts/OpenSans-Medium.ttf"),
+  });
 
   const [logs, setLogs] = useState([]);
   const [polylineCoords, setPolyline] = useState();
+
+  const styles = StyleSheet.create({
+    productContainer: {
+      flex: 1,
+      paddingTop: 30,
+      backgroundColor: "#369399",
+    },
+
+    headerText: {
+      fontSize: 28,
+      marginLeft: 10,
+      padding: 10,
+      color: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+
+    desContainer: {
+      width: "100%",
+      height: "100%",
+    },
+
+    buttonContainer: {
+      position: "absolute",
+      top: 20,
+      right: 20,
+      backgroundColor: "#fff",
+      borderRadius: 5,
+      padding: 10,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    button: {
+      padding: 10,
+      paddingBottom: 5,
+      paddingTop: 3,
+      margin: 0,
+      marginRight: 15,
+      color: "#369399",
+      borderRadius: 100,
+      borderWidth: 1,
+      borderColor: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    circle: {
+      height: 20,
+      width: 20,
+      borderRadius: 100,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "black",
+    },
+    core: {
+      height: 19,
+      width: 19,
+      borderRadius: 20,
+      position: "relative",
+      backgroundColor: "#369399",
+    },
+
+    buttonText: {
+      fontSize: 18,
+      color: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    bottomSheetContent: {
+      padding: 40,
+      marginTop: 10,
+      alignItems: "center",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    bottomSheetText: {
+      fontSize: 21,
+      marginBottom: 10,
+      color: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+    bottomSheetCloseButton: {
+      marginTop: 10,
+      padding: 16,
+      borderRadius: 20,
+      borderWidth: 2,
+      borderColor: "lightgrey",
+      fontFamily: loaded ? "OpenSans-Medium" : "System",
+    },
+  });
+
+  function CustomText(props) {
+    if (props.show) {
+      return (
+        <View
+          style={{
+            backgroundColor: "#369399",
+            alignSelf: "center",
+            position: "absolute",
+            marginTop: 50,
+            padding: 10,
+            borderRadius: 20,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 26,
+              color: "white",
+              fontFamily: loaded ? "OpenSans-Medium" : "System",
+            }}
+          >
+            Uploading GPS location...
+          </Text>
+        </View>
+      );
+    } else {
+      return null;
+    }
+  }
 
   function CustomMarker({ collar }) {
     if (collar.type === "cat") {
@@ -265,93 +364,3 @@ export default function ProductPage(props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  productContainer: {
-    flex: 1,
-    paddingTop: 30,
-    backgroundColor: "#369399",
-  },
-
-  headerText: {
-    fontSize: 28,
-    marginLeft: 10,
-    padding: 10,
-    color: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-
-  desContainer: {
-    width: "100%",
-    height: "100%",
-  },
-
-  buttonContainer: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    backgroundColor: "#fff",
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  button: {
-    padding: 10,
-    paddingBottom: 5,
-    paddingTop: 3,
-    margin: 0,
-    marginRight: 15,
-    color: "#369399",
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-  circle: {
-    height: 20,
-    width: 20,
-    borderRadius: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "black",
-  },
-  core: {
-    height: 19,
-    width: 19,
-    borderRadius: 20,
-    position: "relative",
-    backgroundColor: "#369399",
-  },
-
-  buttonText: {
-    fontSize: 18,
-    color: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-  bottomSheetContent: {
-    padding: 40,
-    marginTop: 10,
-    alignItems: "center",
-    fontFamily: "sans-serif",
-  },
-  bottomSheetText: {
-    fontSize: 21,
-    marginBottom: 10,
-    fontFamily: "sans-serif",
-  },
-  bottomSheetCloseButton: {
-    marginTop: 10,
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "lightgrey",
-    fontFamily: "sans-serif",
-  },
-});
