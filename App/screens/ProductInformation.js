@@ -40,8 +40,7 @@ export default function ProductPage(props) {
   const styles = StyleSheet.create({
     productContainer: {
       flex: 1,
-      paddingTop: 30,
-      backgroundColor: "#369399",
+      borderRadius: 10,
     },
 
     headerText: {
@@ -290,7 +289,9 @@ export default function ProductPage(props) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingTop: 10,
+          paddingTop: 40,
+          borderRadius: 10,
+          backgroundColor: "#369399",
         }}
       >
         <Text style={styles.headerText}>{collar.name}</Text>
@@ -334,7 +335,7 @@ export default function ProductPage(props) {
         <TouchableOpacity
           style={{
             position: "absolute",
-            bottom: 100,
+            bottom: 130,
             justifyContent: "center",
             alignItems: "center",
             alignSelf: "center",
