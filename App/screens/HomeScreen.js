@@ -17,7 +17,7 @@ import { Client, Message } from "paho-mqtt";
 export default function HomeScreen(props) {
   const { email } = props.route.params;
   const [collars, setCollars] = useState([]);
-  const [lockDoorColor, setLockDoorColor] = useState("#222222");
+  const [lockDoorColor, setLockDoorColor] = useState("#045c62");
   const [image, setImage] = useState(require("../src/img/lock.png"));
   const navigation = useNavigation();
   const location = props.route.params.location;
@@ -105,7 +105,7 @@ export default function HomeScreen(props) {
 
   function toggleLockDoorColor() {
     if (lockDoorColor === "#369399") {
-      setLockDoorColor("#222222");
+      setLockDoorColor("#045c62");
       setImage(require("../src/img/lock.png"));
     } else {
       setLockDoorColor("#369399");
@@ -129,7 +129,7 @@ export default function HomeScreen(props) {
           });
         },
       });
-    } else if (lockDoorColor === "#222222") {
+    } else if (lockDoorColor === "#045c62") {
       console.log("Connected successfully");
       client.connect({
         onSuccess: () => {
@@ -146,7 +146,6 @@ export default function HomeScreen(props) {
 
   return (
     <View style={{ backgroundColor: "#183e42", flex: 1 }}>
-      {/* // "#BDBEA9" */}
       <View
         style={{
           flexDirection: "row",
