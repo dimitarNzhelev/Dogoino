@@ -10,7 +10,13 @@ import {
   Image,
 } from "react-native";
 import { auth, firestore } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Client, Message } from "paho-mqtt";
 import { useFonts } from "expo-font";
@@ -18,8 +24,9 @@ import { useFonts } from "expo-font";
 export default function HomeScreen(props) {
   const { email } = props.route.params;
   const [collars, setCollars] = useState([]);
-  const [lockDoorColor, setLockDoorColor] = useState("#045c62");
   const [image, setImage] = useState(require("../src/img/lock.png"));
+  const [lockDoorColor, setLockDoorColor] = useState(false);
+
   const navigation = useNavigation();
   const location = props.route.params.location;
   const [loaded] = useFonts({
@@ -142,9 +149,9 @@ export default function HomeScreen(props) {
 
   async function getData() {
     try {
-      const dbInstance = collection(firestore, "users", email, "collars");
-      const userDocs = await getDocs(dbInstance);
-      const mappedCollars = userDocs.docs.map((doc) => ({
+      const collRef = collection(firestore, "users", email, "collars");
+      const querySnapshot = await getDocs(collRef);
+      const mappedCollars = querySnapshot.docs.map((doc) => ({
         id: doc.data().id,
         name: doc.data().name,
         type: doc.data().type,
@@ -153,6 +160,19 @@ export default function HomeScreen(props) {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  async function ChangeLockState() {
+    const lockRef = doc(firestore, "users", email, "lock", "lockDoor");
+    const lockDocSnap = await getDoc(lockRef);
+
+    const lockValue = lockDocSnap.data().value;
+    if (lockValue == "false") {
+      await updateDoc(lockRef, { value: "true" });
+    } else if (lockValue == "true") {
+      await updateDoc(lockRef, { value: "false" });
+    }
+    toggleLockDoorColor();
   }
 
   function PressHandler(collar) {
@@ -193,6 +213,7 @@ export default function HomeScreen(props) {
       setCollars(collars);
     }
     fetchCollars();
+    toggleLockDoorColor();
   }, []);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -205,25 +226,30 @@ export default function HomeScreen(props) {
     }).start();
   }, [fadeAnim]);
 
-  function toggleLockDoorColor() {
-    if (lockDoorColor === "#369399") {
+  async function toggleLockDoorColor() {
+    const lockRef = doc(firestore, "users", email, "lock", "lockDoor");
+
+    const lockDocSnap = await getDoc(lockRef);
+
+    const lockValue = lockDocSnap.data().value;
+
+    if (lockValue === "true") {
       setLockDoorColor("#045c62");
       setImage(require("../src/img/lock.png"));
     } else {
       setLockDoorColor("#369399");
       setImage(require("../src/img/unlock.png"));
     }
+
     const client = new Client(
       "broker.hivemq.com",
       Number(8000),
       "reactApplication"
     );
 
-    if (lockDoorColor === "#369399") {
-      console.log("Connected successfully");
+    if (lockValue === "true") {
       client.connect({
         onSuccess: () => {
-          console.log("Connected successfully");
           collars.map((collar) => {
             const message = new Message("1");
             message.destinationName = `${collar.id}/door`;
@@ -231,13 +257,12 @@ export default function HomeScreen(props) {
           });
         },
       });
-    } else if (lockDoorColor === "#045c62") {
-      console.log("Connected successfully");
+    } else if (lockValue === "false") {
       client.connect({
         onSuccess: () => {
-          console.log("Connected successfully");
           collars.map((collar) => {
             const message = new Message("0");
+
             message.destinationName = `${collar.id}/door`;
             client.send(message);
           });
@@ -292,25 +317,27 @@ export default function HomeScreen(props) {
       </View>
       <View style={styles.container}>
         <ScrollView>
-          {collars.map((collar, key) => (
-            <Animated.View
-              key={key}
-              style={{ ...styles.listContainer, opacity: fadeAnim }}
-            >
-              <Pressable onPress={() => PressHandler(collar)}>
-                <View style={styles.headerContainer}>
-                  <Text style={styles.headerText}>{collar.name}</Text>
-                </View>
-              </Pressable>
-              <View style={{ alignItems: "flex-end" }}>
-                <Pressable onPress={() => DeleteCollar(collar.name)}>
-                  <View style={styles.statusContainer}>
-                    <Text style={styles.deleteText}>Delete</Text>
+          {collars
+            ? collars.map((collar, key) => (
+                <Animated.View
+                  key={key}
+                  style={{ ...styles.listContainer, opacity: fadeAnim }}
+                >
+                  <Pressable onPress={() => PressHandler(collar)}>
+                    <View style={styles.headerContainer}>
+                      <Text style={styles.headerText}>{collar.name}</Text>
+                    </View>
+                  </Pressable>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Pressable onPress={() => DeleteCollar(collar.name)}>
+                      <View style={styles.statusContainer}>
+                        <Text style={styles.deleteText}>Delete</Text>
+                      </View>
+                    </Pressable>
                   </View>
-                </Pressable>
-              </View>
-            </Animated.View>
-          ))}
+                </Animated.View>
+              ))
+            : null}
         </ScrollView>
       </View>
       <Animated.View
@@ -322,7 +349,7 @@ export default function HomeScreen(props) {
       ></Animated.View>
       <Animated.View style={{ opacity: fadeAnim }}>
         <TouchableOpacity
-          onPress={() => toggleLockDoorColor()}
+          onPress={() => ChangeLockState()}
           style={{
             ...styles.lockDoor,
             backgroundColor: lockDoorColor,

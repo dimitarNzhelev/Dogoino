@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { setDoc, doc } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 import { useFonts } from "expo-font";
 
@@ -71,10 +71,21 @@ function RegisterScreen() {
       .then(async (userCredential) => {
         const user = userCredential.user;
         try {
+          const lockCollectionRef = collection(
+            firestore,
+            "users",
+            email,
+            "lock"
+          );
+
           await setDoc(doc(firestore, "users", email), {
             email: email,
           });
-          navigation.replace("Home", { email: user.email });
+
+          const lockDocRef = doc(lockCollectionRef, "lockDoor");
+          await setDoc(lockDocRef, { value: false });
+
+          navigation.replace("Login", { email: user.email });
         } catch (e) {
           console.error("Error adding document: ", e);
         }
