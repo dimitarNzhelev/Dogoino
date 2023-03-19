@@ -6,12 +6,12 @@ import time
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-global locked
 locked = False
 client = mqtt.Client("pi4")
 client.connect("broker.hivemq.com")
 client.subscribe("326460584940/door")
 time.sleep(10)
+
 
 def on_message(client, userdata, message):
     global locked
@@ -23,6 +23,7 @@ def on_message(client, userdata, message):
         locked = False
         print("Reader unlocked")
 
+
 # Set up the MQTT client
 client.on_message = on_message
 client.loop_start()
@@ -32,15 +33,19 @@ time.sleep(2)
 
 # Set up the RFID reader
 reader = SimpleMFRC522()
+
+
 def Open_Close(direction, motor_pins, step_sequence, motor_step_counter):
     for i in range(step_count):
         for pin in range(0, len(motor_pins)):
-            GPIO.output(motor_pins[pin], step_sequence[motor_step_counter][pin])
+            GPIO.output(motor_pins[pin],
+                        step_sequence[motor_step_counter][pin])
         if direction == True:
             motor_step_counter = (motor_step_counter - 1) % 8
         elif direction == False:
             motor_step_counter = (motor_step_counter + 1) % 8
         time.sleep(step_sleep)
+
 
 def cleanup():
     GPIO.output(in1, GPIO.LOW)
@@ -49,7 +54,8 @@ def cleanup():
     GPIO.output(in4, GPIO.LOW)
     GPIO.cleanup()
 
-# RFID 
+
+# RFID
 reader = SimpleMFRC522()
 
 
@@ -72,7 +78,7 @@ step_sequence = [[1, 0, 0, 1],
                  [0, 0, 0, 1]]
 
 motor_pins = [in1, in2, in3, in4]
-motor_step_counter = 0 
+motor_step_counter = 0
 step_sleep = 0.002
 
 # setting up
@@ -97,8 +103,9 @@ GPIO.setup(ECHO, GPIO.IN)
 
 GPIO.output(TRIG, False)
 print("Waiting for sensor to settle...")
-time.sleep(2) 
+time.sleep(2)
 constDist = 0
+
 
 def GetDist():
     GPIO.output(TRIG, True)
@@ -114,8 +121,9 @@ def GetDist():
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
-    
+
     return distance
+
 
 constDist = GetDist()
 print(constDist)
@@ -125,27 +133,29 @@ while True:
         id, text = reader.read()
         print(id)
         time.sleep(0.5)
-        
+
         if id == 326460584940:
             if locked:
                 print("Reader is locked, cannot read.")
             else:
-                if not locked: # Added check for locked variable
-                    Open_Close(True, motor_pins, step_sequence, motor_step_counter)
+                if not locked:  # Added check for locked variable
+                    Open_Close(True, motor_pins, step_sequence,
+                               motor_step_counter)
                     while True:
                         time.sleep(5)
                         distance = GetDist()
                         if distance < constDist * 0.6:
                             continue
-                        else: 
+                        else:
                             break
-                    Open_Close(False, motor_pins, step_sequence, motor_step_counter)
+                    Open_Close(False, motor_pins, step_sequence,
+                               motor_step_counter)
                 else:
                     print("Door is locked")
-            
+
         else:
             print("Unknown RFID tag")
-            
+
     except Exception as e:
         print(f"Exception occurred: {e}")
         GPIO.cleanup()

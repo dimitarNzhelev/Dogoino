@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 import paho.mqtt.client as mqtt
+import json
 
 cred = credentials.Certificate(
     './loginauth-5aa1e-firebase-adminsdk-hd0t3-1200b1773c.json')
@@ -16,19 +17,35 @@ user = db.collection("users").document(
 client = mqtt.Client("pi4")
 client.connect("broker.hivemq.com")
 all_gps = {}
+locked = False
+
 for doc in user:
     x = doc.to_dict()
     client.subscribe(f"{x['id']}/door")
     client.subscribe(f"{x['id']}/awaitLoc")
     client.subscribe(f"{x['id']}/gps")
-    all_gps.setdefault(x['id'], [])  # set default value for new key
+    all_gps.setdefault(x['id'], [])
 
 
 def on_message(client, userdata, message):
+    global all_gps
+    id = message.topic.split('/')[0]
     if 'gps' in message.topic:
-        print(f"{message.topic.split('/')[0]}{message.payload.decode()}")
-        all_gps[message.topic.split('/')[0]].append(message.payload.decode())
-        print(all_gps)
+        coords = message.payload.decode()
+        print(f"{id} {coords}")
+        if len(all_gps[id]) == 0 or all_gps[id][-1] != coords:
+            all_gps[id].append(coords)
+    if 'awaitLoc' in message.topic:
+        if message.payload.decode() == '1':
+            client.publish(f"{id}/receiveLoc",
+                           json.dumps(all_gps[id]), qos=1, retain=False)
+    if 'door' in message.topic:
+        if message.payload.decode() == "1":
+            locked = True
+            print("Reader locked")
+        elif message.payload.decode() == "0":
+            locked = False
+            print("Reader unlocked")
 
 
 client.on_message = on_message
