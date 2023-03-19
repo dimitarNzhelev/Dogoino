@@ -12,12 +12,16 @@ app = firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 user = db.collection("users").document(
-    "mitko123@gmail.com").collection("collars").get()
+    "aa@gmail.com").collection("collars").get()
 
 client = mqtt.Client("pi4")
 client.connect("broker.hivemq.com")
 all_gps = {}
-locked = False
+lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
+lock_doc_snap = lock_ref.get()
+
+lock_value = lock_doc_snap.to_dict()["value"]
+locked = bool(lock_value)
 
 for doc in user:
     x = doc.to_dict()
@@ -31,10 +35,13 @@ def on_message(client, userdata, message):
     global all_gps
     id = message.topic.split('/')[0]
     if 'gps' in message.topic:
-        coords = message.payload.decode()
-        print(f"{id} {coords}")
+        coords = message.payload.decode().split(", ")
+        latitude = coords[0]
+        longitude = coords[1]
+        print(f"{coords}")
         if len(all_gps[id]) == 0 or all_gps[id][-1] != coords:
-            all_gps[id].append(coords)
+            all_gps[id].append(
+                {"latitude": float(latitude), "longitude": float(longitude)})
     if 'awaitLoc' in message.topic:
         if message.payload.decode() == '1':
             client.publish(f"{id}/receiveLoc",
