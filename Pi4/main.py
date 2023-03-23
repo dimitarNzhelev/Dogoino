@@ -1,27 +1,66 @@
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
-import paho.mqtt.client as mqtt
 import time
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+import paho.mqtt.client as mqtt
+import json
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-locked = False
+cred = credentials.Certificate(
+    './loginauth-5aa1e-firebase-adminsdk-hd0t3-1200b1773c.json')
+
+app = firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
+user = db.collection("users").document(
+    "aa@gmail.com").collection("collars").get()
+
 client = mqtt.Client("pi4")
 client.connect("broker.hivemq.com")
-client.subscribe("326460584940/door")
-time.sleep(10)
+all_gps = {}  # all gps cords for every id
+ids = ()  # empty tuple for the ids
+lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
+lock_doc_snap = lock_ref.get()
+
+lock_value = lock_doc_snap.to_dict()["value"]
+locked = bool(lock_value)
+
+for doc in user:
+    x = doc.to_dict()
+    client.subscribe(f"{x['id']}/door")
+    client.subscribe(f"{x['id']}/awaitLoc")
+    client.subscribe(f"{x['id']}/gps")
+    all_gps.setdefault(x['id'], [])
+    ids = ids + ({x['id']},)
 
 
 def on_message(client, userdata, message):
-    global locked
-    print(str(message.payload.decode()))
-    if message.payload.decode() == "1":
-        locked = True
-        print("Reader locked")
-    elif message.payload.decode() == "0":
-        locked = False
-        print("Reader unlocked")
+    global all_gps
+    id = message.topic.split('/')[0]
+    if 'gps' in message.topic:
+        coords = message.payload.decode().split(", ")
+        latitude = coords[0]
+        longitude = coords[1]
+        print(f"{coords}")
+        if len(all_gps[id]) == 0 or all_gps[id][-1] != coords:
+            all_gps[id].append(
+                {"latitude": float(latitude), "longitude": float(longitude)})
+    if 'awaitLoc' in message.topic:
+        if message.payload.decode() == '1':
+            client.publish(f"{id}/receiveLoc",
+                           json.dumps(all_gps[id]), qos=1, retain=False)
+    if 'door' in message.topic:
+        if message.payload.decode() == "1":
+            locked = True
+            print("Reader locked")
+        elif message.payload.decode() == "0":
+            locked = False
+            print("Reader unlocked")
 
 
 # Set up the MQTT client
@@ -35,16 +74,20 @@ time.sleep(2)
 reader = SimpleMFRC522()
 
 
-def Open_Close(direction, motor_pins, step_sequence, motor_step_counter):
+def Open_Close(direction, motor_pins, step_sequence, motor_step_counter, id):
+    collar_doc_ref = db.document("users/aa@gmail.com/collars/{}".format(id))
+    logs_collection_ref = collar_doc_ref.collection("logs")
     for i in range(step_count):
         for pin in range(0, len(motor_pins)):
             GPIO.output(motor_pins[pin],
                         step_sequence[motor_step_counter][pin])
-        if direction == True:
+        if direction == True:  # OPEN THE DOOR
             motor_step_counter = (motor_step_counter - 1) % 8
+            logs_collection_ref.add({"message": "Door opened"})
         elif direction == False:
             motor_step_counter = (motor_step_counter + 1) % 8
-        time.sleep(step_sleep)
+            logs_collection_ref.add({"message": "Door closed"})
+    time.sleep(step_sleep)
 
 
 def cleanup():
@@ -59,7 +102,7 @@ def cleanup():
 reader = SimpleMFRC522()
 
 
-# Stepper motor setup
+# Stepper motor
 in1 = 17
 in2 = 18
 in3 = 27
@@ -67,7 +110,6 @@ in4 = 22
 direction = False
 step_count = 2200
 
-# defining stepper motor sequence (found in documentation http://www.4tronix.co.uk/arduino/Stepper-Motors.php)
 step_sequence = [[1, 0, 0, 1],
                  [1, 0, 0, 0],
                  [1, 1, 0, 0],
@@ -134,13 +176,13 @@ while True:
         print(id)
         time.sleep(0.5)
 
-        if id == 326460584940:
+        if {id} in ids:
             if locked:
                 print("Reader is locked, cannot read.")
             else:
-                if not locked:  # Added check for locked variable
+                if not locked:
                     Open_Close(True, motor_pins, step_sequence,
-                               motor_step_counter)
+                               motor_step_counter, id)
                     while True:
                         time.sleep(5)
                         distance = GetDist()

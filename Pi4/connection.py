@@ -19,7 +19,7 @@ client.connect("broker.hivemq.com")
 all_gps = {}
 lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
 lock_doc_snap = lock_ref.get()
-
+ids = ()
 lock_value = lock_doc_snap.to_dict()["value"]
 locked = bool(lock_value)
 
@@ -29,6 +29,8 @@ for doc in user:
     client.subscribe(f"{x['id']}/awaitLoc")
     client.subscribe(f"{x['id']}/gps")
     all_gps.setdefault(x['id'], [])
+    ids = ids + ({x['id']},)
+print(ids)
 
 
 def on_message(client, userdata, message):
