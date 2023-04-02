@@ -1,8 +1,8 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import paho.mqtt.client as mqtt
-import json
+import time
+from datetime import datetime
 
 cred = credentials.Certificate(
     './loginauth-5aa1e-firebase-adminsdk-hd0t3-1200b1773c.json')
@@ -11,51 +11,60 @@ app = firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-user = db.collection("users").document(
-    "aa@gmail.com").collection("collars").get()
+step_count = 2200
 
-client = mqtt.Client("pi4")
-client.connect("broker.hivemq.com")
-all_gps = {}
-lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
-lock_doc_snap = lock_ref.get()
-ids = ()
-lock_value = lock_doc_snap.to_dict()["value"]
-locked = bool(lock_value)
-
-for doc in user:
-    x = doc.to_dict()
-    client.subscribe(f"{x['id']}/door")
-    client.subscribe(f"{x['id']}/awaitLoc")
-    client.subscribe(f"{x['id']}/gps")
-    all_gps.setdefault(x['id'], [])
-    ids = ids + ({x['id']},)
-print(ids)
+step_sleep = 0.002
 
 
-def on_message(client, userdata, message):
-    global all_gps
-    id = message.topic.split('/')[0]
-    if 'gps' in message.topic:
-        coords = message.payload.decode().split(", ")
-        latitude = coords[0]
-        longitude = coords[1]
-        print(f"{coords}")
-        if len(all_gps[id]) == 0 or all_gps[id][-1] != coords:
-            all_gps[id].append(
-                {"latitude": float(latitude), "longitude": float(longitude)})
-    if 'awaitLoc' in message.topic:
-        if message.payload.decode() == '1':
-            client.publish(f"{id}/receiveLoc",
-                           json.dumps(all_gps[id]), qos=1, retain=False)
-    if 'door' in message.topic:
-        if message.payload.decode() == "1":
-            locked = True
-            print("Reader locked")
-        elif message.payload.decode() == "0":
-            locked = False
-            print("Reader unlocked")
+def delete_collection(coll_ref, batch_size):
+    docs = coll_ref.limit(batch_size).get()
+    deleted = 0
+    if (len(docs) == 0):
+        return deleted
+    for doc in docs:
+        print(f'Deleting doc {doc.id} => {doc.to_dict()}')
+        doc.reference.delete()
+        deleted += 1
+
+    if deleted >= batch_size:
+        return delete_collection(coll_ref, batch_size)
 
 
-client.on_message = on_message
-client.loop_forever()
+def Open_Close(direction, motor_pins, step_sequence, motor_step_counter, id):
+
+    query = db.collection("users").document(
+        "aa@gmail.com").collection("collars")
+
+    for doc in query.stream():
+        print(f"{doc.id} => {doc.to_dict()['id']}")
+        if (doc.to_dict()['id'] == id):
+            name = doc.id
+            break
+    logs = db.collection("users").document(
+        "aa@gmail.com").collection("collars").document(name).collection("logs")
+    now = datetime.now()
+
+    hour = int(now.strftime("%H"))
+
+    # if hour == 0:
+    # for i in range(step_count):
+    #     for pin in range(0, len(motor_pins)):
+    #         GPIO.output(motor_pins[pin],
+    #                     step_sequence[motor_step_counter][pin])
+    #     if direction == True:
+    #         motor_step_counter = (motor_step_counter - 1) % 8
+    #     elif direction == False:
+    #         motor_step_counter = (motor_step_counter + 1) % 8
+    #     time.sleep(step_sleep)
+    # if direction == False:
+    logs.add({"message": "{}  The Door Closed".format(
+        now.strftime("%H:%M:%S"))})
+    time.sleep(2)
+    # elif direction == True:
+    now = datetime.now()
+    logs.add({"message": "{}  The Door Opened".format(
+        now.strftime("%H:%M:%S"))})
+    # time.sleep(2)
+
+
+Open_Close(True, 0, 0, 0, "326460584940")

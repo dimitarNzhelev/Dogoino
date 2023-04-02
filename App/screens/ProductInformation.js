@@ -118,7 +118,7 @@ export default function ProductPage(props) {
       fontFamily: loaded ? "OpenSans-Medium" : "System",
     },
     bottomSheetCloseButton: {
-      marginTop: 10,
+      marginTop: 20,
       padding: 16,
       borderRadius: 20,
       borderWidth: 2,
@@ -196,6 +196,18 @@ export default function ProductPage(props) {
       );
       const querySnapshot = await getDocs(dbinstance);
       const logs = querySnapshot.docs.map((doc) => doc.data());
+      logs.sort((a, b) => {
+        const timeA = getSecondsSinceMidnight(a.message.split(" ")[0]);
+        const timeB = getSecondsSinceMidnight(b.message.split(" ")[0]);
+        return timeB - timeA;
+      });
+
+      function getSecondsSinceMidnight(timeString) {
+        const [hours, minutes, seconds] = timeString.split(":");
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+
+      console.log(logs);
       return logs;
     } catch (error) {
       console.log(error);
@@ -347,12 +359,12 @@ export default function ProductPage(props) {
       </View>
       <BottomSheet show={showBottomSheet} height={290} onOuterClick={hide}>
         <View style={styles.bottomSheetContent}>
-          <ScrollView>
+          <ScrollView style={{ height: 130 }}>
             {logs.map((log, key) => {
               const logValue = Object.values(log)[0];
               return (
                 <Text key={key + 1} style={styles.bottomSheetText}>
-                  Log {key + 1}: {logValue}
+                  {logValue}
                 </Text>
               );
             })}

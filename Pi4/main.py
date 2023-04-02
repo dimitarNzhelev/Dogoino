@@ -137,7 +137,7 @@ GPIO.output(in4, GPIO.LOW)
 
 
 # Sonic setup
-TRIG = 23
+TRIG = 26
 ECHO = 24
 
 GPIO.setup(TRIG, GPIO.OUT)
