@@ -6,6 +6,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import paho.mqtt.client as mqtt
 import json
+import datetime
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -28,8 +29,8 @@ lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
 lock_doc_snap = lock_ref.get()
 
 lock_value = lock_doc_snap.to_dict()["value"]
-locked = bool(lock_value)
-
+locked = lock_value
+print(lock_value)
 for doc in user:
     x = doc.to_dict()
     client.subscribe(f"{x['id']}/door")
@@ -41,6 +42,7 @@ for doc in user:
 
 def on_message(client, userdata, message):
     global all_gps
+
     id = message.topic.split('/')[0]
     if 'gps' in message.topic:
         coords = message.payload.decode().split(", ")
@@ -75,19 +77,32 @@ reader = SimpleMFRC522()
 
 
 def Open_Close(direction, motor_pins, step_sequence, motor_step_counter, id):
-    collar_doc_ref = db.document("users/aa@gmail.com/collars/{}".format(id))
-    logs_collection_ref = collar_doc_ref.collection("logs")
+    current_time = datetime.datetime.now().time()
+    formatted_time = current_time.strftime('%H:%M:%S')
+    query = db.collection("users").document(
+        "aa@gmail.com").collection("collars")
+
+    for doc in query.stream():
+        print(f"{doc.id} => {doc.to_dict()['id']}")
+        if (doc.to_dict()['id'] == id):
+            name = doc.id
+            break
+    logs = db.collection("users").document(
+        "aa@gmail.com").collection("collars").document(name).collection("logs")
+
     for i in range(step_count):
         for pin in range(0, len(motor_pins)):
             GPIO.output(motor_pins[pin],
                         step_sequence[motor_step_counter][pin])
-        if direction == True:  # OPEN THE DOOR
+        if direction == True:
             motor_step_counter = (motor_step_counter - 1) % 8
-            logs_collection_ref.add({"message": "Door opened"})
         elif direction == False:
             motor_step_counter = (motor_step_counter + 1) % 8
-            logs_collection_ref.add({"message": "Door closed"})
-    time.sleep(step_sleep)
+        time.sleep(step_sleep)
+    if direction == False:
+        logs.add({"message": f"{formatted_time}  The Door Closed"})
+    elif direction == True:
+        logs.add({"message": f"{formatted_time}  The Door Opened"})
 
 
 def cleanup():
@@ -100,7 +115,6 @@ def cleanup():
 
 # RFID
 reader = SimpleMFRC522()
-
 
 # Stepper motor
 in1 = 17
@@ -138,7 +152,7 @@ GPIO.output(in4, GPIO.LOW)
 
 # Sonic setup
 TRIG = 26
-ECHO = 24
+ECHO = 16
 
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
@@ -173,27 +187,31 @@ print(constDist)
 while True:
     try:
         id, text = reader.read()
-        print(id)
+        id = str(id)
+        print({id})
+        print(ids)
         time.sleep(0.5)
-
         if {id} in ids:
-            if locked:
-                print("Reader is locked, cannot read.")
+            lock_ref = db.document("users/aa@gmail.com/lock/lockDoor")
+            lock_doc_snap = lock_ref.get()
+            lock_value = lock_doc_snap.to_dict()["value"]
+            locked = lock_value
+            print(id)
+            print(locked)
+            if locked == False:
+                Open_Close(True, motor_pins, step_sequence,
+                           motor_step_counter, id)
+                while True:
+                    time.sleep(5)
+                    distance = GetDist()
+                    if distance < constDist * 0.6:
+                        continue
+                    else:
+                        break
+                Open_Close(False, motor_pins, step_sequence,
+                           motor_step_counter, id)
             else:
-                if not locked:
-                    Open_Close(True, motor_pins, step_sequence,
-                               motor_step_counter, id)
-                    while True:
-                        time.sleep(5)
-                        distance = GetDist()
-                        if distance < constDist * 0.6:
-                            continue
-                        else:
-                            break
-                    Open_Close(False, motor_pins, step_sequence,
-                               motor_step_counter)
-                else:
-                    print("Door is locked")
+                print("Door is locked")
 
         else:
             print("Unknown RFID tag")

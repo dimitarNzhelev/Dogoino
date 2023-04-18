@@ -21,7 +21,7 @@ export default function RouteScreen(props) {
   const email = props.route.params.email;
   const location = props.route.params.location;
   const polylineCoords = props.route.params.polylineCoords;
-  const regionCenter = polylineCoords.length / 2;
+  const regionCenter = Math.floor(polylineCoords.length / 2);
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const [logs, setLogs] = useState([]);

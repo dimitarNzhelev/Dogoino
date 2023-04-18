@@ -166,13 +166,19 @@ export default function HomeScreen(props) {
     const lockRef = doc(firestore, "users", email, "lock", "lockDoor");
     const lockDocSnap = await getDoc(lockRef);
 
-    const lockValue = lockDocSnap.data().value;
-    if (lockValue == "false") {
-      await updateDoc(lockRef, { value: "true" });
-    } else if (lockValue == "true") {
-      await updateDoc(lockRef, { value: "false" });
+    if (lockDocSnap.exists()) {
+      const lockValue = lockDocSnap.data().value;
+      console.log(lockValue);
+      if (lockValue == false) {
+        await updateDoc(lockRef, { value: true });
+      } else if (lockValue == true) {
+        await updateDoc(lockRef, { value: false });
+      }
+      console.log("updateDoc");
+      toggleLockDoorColor();
+    } else {
+      console.log("Lock document does not exist");
     }
-    toggleLockDoorColor();
   }
 
   function PressHandler(collar) {
@@ -232,8 +238,8 @@ export default function HomeScreen(props) {
     const lockDocSnap = await getDoc(lockRef);
 
     const lockValue = lockDocSnap.data().value;
-
-    if (lockValue === "true") {
+    console.log(`${lockValue}`);
+    if (lockValue == true) {
       setLockDoorColor("#045c62");
       setImage(require("../src/img/lock.png"));
     } else {
@@ -250,22 +256,26 @@ export default function HomeScreen(props) {
     if (lockValue === "true") {
       client.connect({
         onSuccess: () => {
-          collars.map((collar) => {
-            const message = new Message("1");
-            message.destinationName = `${collar.id}/door`;
-            client.send(message);
-          });
+          if (collars && collars.length > 0) {
+            collars.map((collar) => {
+              const message = new Message("1");
+              message.destinationName = `${collar.id}/door`;
+              client.send(message);
+            });
+          }
         },
       });
     } else if (lockValue === "false") {
       client.connect({
         onSuccess: () => {
-          collars.map((collar) => {
-            const message = new Message("0");
+          if (collars && collars.length > 0) {
+            collars.map((collar) => {
+              const message = new Message("0");
 
-            message.destinationName = `${collar.id}/door`;
-            client.send(message);
-          });
+              message.destinationName = `${collar.id}/door`;
+              client.send(message);
+            });
+          }
         },
       });
     }

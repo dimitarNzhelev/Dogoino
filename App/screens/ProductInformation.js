@@ -206,8 +206,8 @@ export default function ProductPage(props) {
         const [hours, minutes, seconds] = timeString.split(":");
         return hours * 3600 + minutes * 60 + seconds;
       }
-
       console.log(logs);
+
       return logs;
     } catch (error) {
       console.log(error);
@@ -253,12 +253,13 @@ export default function ProductPage(props) {
           updateCollarPosition(newLat, newLon);
         }
       } else if (message.destinationName == `${collar.id}/receiveLoc`) {
-        const array = message.payloadString;
-        locations = JSON.parse(array.trim());
-        polyline = locations.map((location) => ({
+        const array = JSON.parse(message.payloadString);
+        console.log(array);
+        const polyline = array.map((location) => ({
           latitude: location.latitude,
           longitude: location.longitude,
         }));
+        console.log(polyline);
         setPolyline(polyline);
       }
     };
