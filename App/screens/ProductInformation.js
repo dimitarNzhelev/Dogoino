@@ -220,6 +220,7 @@ export default function ProductPage(props) {
       setLogs(logs);
     }
     fetchLogs();
+    updateCollarPosition();
 
     const client = new Client(
       "broker.hivemq.com",
@@ -244,15 +245,16 @@ export default function ProductPage(props) {
     };
     setUserRegion(location);
     client.onMessageArrived = (message) => {
-      if (message.destinationName == `${collar.id}/gps`) {
-        const a = message.payloadString.split(", ");
-        const newLat = parseFloat(a[0]);
-        const newLon = parseFloat(a[1]);
-        if (newLat && newLon != 0.0) {
-          setView(false);
-          updateCollarPosition(newLat, newLon);
-        }
-      } else if (message.destinationName == `${collar.id}/receiveLoc`) {
+      // if (message.destinationName == `${collar.id}/gps`) {
+      //   const a = message.payloadString.split(", ");
+      //   const newLat = parseFloat(a[0]);
+      //   const newLon = parseFloat(a[1]);
+      //   if (newLat && newLon != 0.0) {
+      //     setView(false);
+      //     updateCollarPosition(newLat, newLon);
+      //   }
+      // } else
+      if (message.destinationName == `${collar.id}/receiveLoc`) {
         const array = JSON.parse(message.payloadString);
         console.log(array);
         const polyline = array.map((location) => ({
@@ -265,10 +267,10 @@ export default function ProductPage(props) {
     };
   }, [location]);
 
-  const updateCollarPosition = (newLat, newLon) => {
+  const updateCollarPosition = () => {
     const newRegion = {
-      latitude: newLat,
-      longitude: newLon,
+      latitude: 42.666131,
+      longitude: 23.375466,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421,
     };
@@ -317,7 +319,7 @@ export default function ProductPage(props) {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { alignSelf: "flex-end", marginRight: 10 }]}
-            onPress={GoRoute}
+            // onPress={GoRoute}
           >
             <Text style={styles.buttonText}>View Route</Text>
           </TouchableOpacity>
